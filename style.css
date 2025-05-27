@@ -1,8 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+39+Extended+Text&display=swap');
-
 :root {
-	font-family: "Libre Barcode 39 Extended Text", system-ui, sans-serif;
-	font-size: 1.25vw;
+	font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+	font-size: calc(42px + (60 - 42) * (100vw - 768px) / (1440 - 768));
 	text-align: center;
 	background-color: black;
 	color: white;
