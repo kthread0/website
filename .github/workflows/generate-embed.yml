@@ -25,41 +25,50 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
               with:
-                  node-version: "latest"
+                  bun-version: latest
+
+            - name: Create package.json
+              run: |
+                  cat > package.json << 'EOF'
+                  {
+                    "name": "embed-generator",
+                    "version": "1.0.0",
+                    "type": "module",
+                    "dependencies": {
+                      "playwright": "^1.40.0"
+                    }
+                  }
+                  EOF
 
             - name: Install dependencies
               run: |
-                  pnpm install playwright
-                  pnpm dlx playwright install --with-deps chromium
+                  bun install
+                  bunx playwright install --with-deps chromium
 
             - name: Create embed generator script
               run: |
                   cat > generate-embed.js << 'EOF'
-                  const { chromium } = require('playwright');
-                  const fs = require('fs');
-                  const path = require('path');
+                  import { chromium } from 'playwright';
+                  import { writeFileSync, readFileSync } from 'fs';
 
                   async function generateEmbedPreview() {
                     const browser = await chromium.launch();
                     const page = await browser.newPage();
 
-                    // Set viewport for social media embed (1200x630 for Open Graph)
                     await page.setViewportSize({ width: 1200, height: 630 });
 
-                    // Read the main HTML file to extract project count
-                    let projectCount = 1; // Default fallback
+                    let projectCount = 1;
                     try {
-                      const htmlContent = fs.readFileSync('index.html', 'utf8');
+                      const htmlContent = readFileSync('index.html', 'utf8');
                       const projectMatches = htmlContent.match(/<article class="project-card">/g);
                       projectCount = projectMatches ? projectMatches.length : 1;
                     } catch (e) {
                       console.log('Could not read index.html, using default project count');
                     }
 
-                    // Create a minimal grid-like embed design
                     const embedHTML = `
                     <!DOCTYPE html>
                     <html lang="en">
@@ -210,19 +219,14 @@ jobs:
                     `;
 
                     await page.setContent(embedHTML);
-
-                    // Wait for fonts to load and animations to settle
                     await page.waitForTimeout(3000);
 
-                    // Take screenshot
                     const screenshot = await page.screenshot({
                       type: 'png',
                       fullPage: false
                     });
 
-                    // Save PNG version
-                    fs.writeFileSync('embed-preview.png', screenshot);
-
+                    writeFileSync('embed-preview.png', screenshot);
                     await browser.close();
                     console.log('Embed preview generated successfully with', projectCount, 'projects!');
                   }
@@ -230,7 +234,7 @@ jobs:
                   generateEmbedPreview().catch(console.error);
                   EOF
             - name: Generate embed preview
-              run: node generate-embed.js
+              run: bun run generate-embed.js
 
             - name: Check for changes
               id: verify-changed-files
