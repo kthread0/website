@@ -1,5 +1,10 @@
 # @format
 
+# GitHub Action for generating embed preview images
+# Copyright (c) 2025 kthread
+# Licensed under the MIT License - see LICENSE file for details
+# @format
+
 name: Generate Embed Preview
 
 on:

@@ -1,6 +1,11 @@
 # @format
 
 # Simple workflow for deploying static content to GitHub Pages
+# Copyright (c) 2025 kthread
+# Licensed under the MIT License - see LICENSE file for details
+# @format
+
+# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:

@@ -3,6 +3,9 @@
  * Uses WebGL for optimal performance with Canvas 2D fallback
  * Includes mobile optimizations and accessibility support
  *
+ * Copyright (c) 2025 kthread
+ * Licensed under the MIT License - see LICENSE file for details
+ *
  * @format
  */
 

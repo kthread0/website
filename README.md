@@ -44,4 +44,6 @@ Visit `http://localhost:3000` (Bun) or `http://localhost:8000` (Python) to view 
 
 ## License
 
-This project is for personal use. Feel free to use as inspiration for your own portfolio.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+You are free to use, modify, and distribute this code for any purpose, including commercial use.
