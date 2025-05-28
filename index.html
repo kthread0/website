@@ -1,30 +1,133 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="description" content="kthread - Work in progress website" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="kthread - Minimal developer portfolio" />
 
-		<!-- Preconnect to Google Fonts for better performance -->
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet" />
 
-		<!-- Load high-quality fonts with font-display: swap for better performance -->
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <title>kthread</title>
+  </head>
+  <body>
+    <canvas id="noise-canvas" aria-hidden="true"></canvas>
 
-		<link rel="stylesheet" href="style.css" />
-		<title>kthread</title>
-	</head>
-	<body>
-		<!-- Animated noise background canvas -->
-		<canvas id="noise-canvas" aria-hidden="true"></canvas>
+    <header class="header">
+      <nav class="nav">
+        <div class="nav-brand">kthread</div>
+        <ul class="nav-menu">
+          <li><a href="#about" class="nav-link">about</a></li>
+          <li><a href="#projects" class="nav-link">projects</a></li>
+          <li><a href="#contact" class="nav-link">contact</a></li>
+        </ul>
+      </nav>
+    </header>
 
-		<main role="main">
-			<div class="container">
-				<h1>work in progress, come back later!</h1>
-			</div>
-		</main>
+    <main class="main">
 
-		<script src="noise-animation.js"></script>
-	</body>
+      <section class="hero">
+        <div class="container">
+          <div class="hero-content">
+            <h1 class="hero-title">
+              hello, i'm a developer.
+            </h1>
+            <p class="hero-description">
+              Hello, welcome to my website/portfolio, here I will be posting blogs and projects that I have worked on, as well as some of my personal projects.
+            </p>
+            <div class="hero-actions">
+              <a href="#projects" class="btn btn-primary">view work</a>
+              <a href="#contact" class="btn btn-secondary">get in touch</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="section">
+        <div class="container">
+          <h2 class="section-title">about</h2>
+          <div class="about-content">
+            <div class="about-text">
+              <p>
+                I am 20 years old and currently studying computer science, specializing in software development and cybersecurity.
+              </p>
+              <p>
+                I've been studying and messing with computers since I was a kid, since then I've learned a lot about how they work, how to make them do what I want, and how to make them do it well.
+              </p>
+            </div>
+            <div class="skills">
+              <h3>skills</h3>
+              <div class="skills-list">
+                <span class="skill">C/C++</span>
+                <span class="skill">Rust</span>
+                <span class="skill">React</span>
+				<span class="skill">JavaScript/TypeScript</span>
+                <span class="skill">Node.js</span>
+				<span class="skill">Linux</span>
+				<span class="skill">BSD</span>
+				<span class="skill">Cybersecurity</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="projects" class="section">
+        <div class="container">
+          <h2 class="section-title">projects</h2>
+          <div class="projects-grid">
+
+            <article class="project-card">
+              <div class="project-header">
+                <h3 class="project-title">genpasswd</h3>
+                <div class="project-links">
+                  <a href="https://github.com/kthread0/genpasswd" class="project-link">[github]</a>
+                </div>
+              </div>
+              <p class="project-description">
+
+              </p>
+              <div class="project-tech">
+                <span class="tech-tag">C</span>
+                <span class="tech-tag">libsodium</span>
+                <span class="tech-tag">security</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="section">
+        <div class="container">
+          <h2 class="section-title">contact</h2>
+          <div class="contact-content">
+            <p class="contact-description">
+              Feel free to reach out for collaborations or just to say hello.
+            </p>
+            <div class="contact-methods">
+              <div class="contact-method">
+                <span class="contact-label">email:</span>
+                <a href="mailto:dev@fault.wtf" class="contact-link">dev@fault.wtf</a>
+              </div>
+              <div class="contact-method">
+                <span class="contact-label">github:</span>
+                <a href="https://github.com/kthread0" class="contact-link">kthread0</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>built with care.</p>
+      </div>
+    </footer>
+
+    <script src="noise-animation.js"></script>
+  </body>
 </html>

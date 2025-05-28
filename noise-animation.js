@@ -9,7 +9,9 @@
 class NoiseAnimation {
 	constructor() {
 		this.canvas = document.getElementById("noise-canvas");
+		this.isWebGPUSupported = false;
 		this.isWebGLSupported = false;
+		this.renderingMethod = "none";
 		this.isAnimating = false;
 		this.animationId = null;
 		this.lastTime = 0;
@@ -43,16 +45,233 @@ class NoiseAnimation {
 		);
 	}
 
-	init() {
+	async init() {
 		if (this.respectsReducedMotion) {
+			await this.initRenderingMethod();
 			this.renderStaticNoise();
 			return;
 		}
 
 		this.setupCanvas();
-		this.initWebGL() || this.initCanvas2D();
+		await this.initRenderingMethod();
 		this.setupEventListeners();
 		this.start();
+	}
+
+	async initRenderingMethod() {
+		// Try WebGPU first
+		if (await this.initWebGPU()) {
+			this.renderingMethod = "webgpu";
+			console.log("Using WebGPU rendering");
+			return true;
+		}
+
+		// Fall back to WebGL
+		if (this.initWebGL()) {
+			this.renderingMethod = "webgl";
+			console.log("Using WebGL rendering");
+			return true;
+		}
+
+		// Final fallback to Canvas 2D
+		if (this.initCanvas2D()) {
+			this.renderingMethod = "canvas2d";
+			console.log("Using Canvas 2D rendering");
+			return true;
+		}
+
+		console.error("No rendering method available");
+		return false;
+	}
+
+	async initWebGPU() {
+		try {
+			// Check if WebGPU is available
+			if (!navigator.gpu) {
+				return false;
+			}
+
+			// Request adapter
+			this.adapter = await navigator.gpu.requestAdapter({
+				powerPreference:
+					this.isMobile || this.isLowPowerMode
+						? "low-power"
+						: "high-performance",
+			});
+
+			if (!this.adapter) {
+				return false;
+			}
+
+			// Request device
+			this.device = await this.adapter.requestDevice();
+
+			// Get WebGPU context
+			this.gpuContext = this.canvas.getContext("webgpu");
+			if (!this.gpuContext) {
+				return false;
+			}
+
+			// Configure the canvas
+			const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
+			this.gpuContext.configure({
+				device: this.device,
+				format: canvasFormat,
+				alphaMode: "premultiplied",
+			});
+
+			// Create shader module
+			const shaderCode = `
+				struct VertexOutput {
+					@builtin(position) position: vec4<f32>,
+					@location(0) texCoord: vec2<f32>,
+				}
+
+				@vertex
+				fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
+					var pos = array<vec2<f32>, 4>(
+						vec2<f32>(-1.0, -1.0),
+						vec2<f32>( 1.0, -1.0),
+						vec2<f32>(-1.0,  1.0),
+						vec2<f32>( 1.0,  1.0)
+					);
+
+					var output: VertexOutput;
+					output.position = vec4<f32>(pos[vertexIndex], 0.0, 1.0);
+					output.texCoord = (pos[vertexIndex] + 1.0) / 2.0;
+					return output;
+				}
+
+				struct Uniforms {
+					time: f32,
+					resolution: vec2<f32>,
+					noiseScale: f32,
+					// WebGPU struct alignment requires padding to 16-byte boundaries
+					// This ensures proper memory layout
+				}
+
+				@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+
+				// High-performance noise function for WebGPU
+				fn random(st: vec2<f32>) -> f32 {
+					return fract(sin(dot(st, vec2<f32>(12.9898, 78.233))) * 43758.5453123);
+				}
+
+				fn noise(st: vec2<f32>) -> f32 {
+					let i = floor(st);
+					let f = fract(st);
+
+					let a = random(i);
+					let b = random(i + vec2<f32>(1.0, 0.0));
+					let c = random(i + vec2<f32>(0.0, 1.0));
+					let d = random(i + vec2<f32>(1.0, 1.0));
+
+					let u = f * f * (3.0 - 2.0 * f);
+
+					return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+				}
+
+				@fragment
+				fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
+					var st = input.texCoord * uniforms.resolution / min(uniforms.resolution.x, uniforms.resolution.y);
+					st = st * uniforms.noiseScale;
+
+					// Animated noise with multiple octaves
+					var n = 0.0;
+					var amplitude = 1.0;
+					var frequency = 1.0;
+
+					// Reduce octaves on mobile for better performance
+					let octaves = ${this.isMobile ? 2 : 3};
+					for (var i = 0; i < octaves; i = i + 1) {
+						n = n + amplitude * noise(st * frequency + uniforms.time * 0.1);
+						amplitude = amplitude * 0.5;
+						frequency = frequency * 2.0;
+					}
+
+					// Subtle noise effect
+					let finalNoise = n * 0.1 + 0.02;
+					return vec4<f32>(finalNoise, finalNoise, finalNoise, finalNoise);
+				}
+			`;
+
+			this.shaderModule = this.device.createShaderModule({
+				code: shaderCode,
+			});
+
+			// Create uniform buffer with proper alignment
+			// WebGPU requires 16-byte alignment for struct members
+			// Our struct has: time (4), resolution (8), noiseScale (4) = 16 bytes
+			// But WebGPU pads to next 16-byte boundary, so we need 32 bytes total
+			this.uniformBuffer = this.device.createBuffer({
+				size: 32, // Properly aligned size for WebGPU
+				usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+			});
+
+			// Create bind group layout
+			this.bindGroupLayout = this.device.createBindGroupLayout({
+				entries: [
+					{
+						binding: 0,
+						visibility: GPUShaderStage.FRAGMENT,
+						buffer: { type: "uniform" },
+					},
+				],
+			});
+
+			// Create bind group
+			this.bindGroup = this.device.createBindGroup({
+				layout: this.bindGroupLayout,
+				entries: [
+					{
+						binding: 0,
+						resource: { buffer: this.uniformBuffer },
+					},
+				],
+			});
+
+			// Create pipeline layout
+			this.pipelineLayout = this.device.createPipelineLayout({
+				bindGroupLayouts: [this.bindGroupLayout],
+			});
+
+			// Create render pipeline
+			this.renderPipeline = this.device.createRenderPipeline({
+				layout: this.pipelineLayout,
+				vertex: {
+					module: this.shaderModule,
+					entryPoint: "vs_main",
+				},
+				fragment: {
+					module: this.shaderModule,
+					entryPoint: "fs_main",
+					targets: [
+						{
+							format: canvasFormat,
+							blend: {
+								color: {
+									srcFactor: "src-alpha",
+									dstFactor: "one-minus-src-alpha",
+								},
+								alpha: {
+									srcFactor: "one",
+									dstFactor: "one-minus-src-alpha",
+								},
+							},
+						},
+					],
+				},
+				primitive: {
+					topology: "triangle-strip",
+				},
+			});
+
+			this.isWebGPUSupported = true;
+			return true;
+		} catch (error) {
+			console.warn("WebGPU initialization failed:", error);
+			return false;
+		}
 	}
 
 	setupCanvas() {
@@ -230,6 +449,49 @@ class NoiseAnimation {
 		return true;
 	}
 
+	renderWebGPU(time) {
+		// Update uniforms with proper WebGPU alignment
+		// WebGPU struct: { time: f32, resolution: vec2<f32>, noiseScale: f32 }
+		// Memory layout: time(4) + pad(4) + resolution.xy(8) + noiseScale(4) + pad(4) = 24 bytes
+		const uniformData = new Float32Array(8); // 32 bytes buffer
+		uniformData[0] = time * this.timeScale; // time (f32)
+		uniformData[1] = 0; // padding to align vec2
+		uniformData[2] = this.canvas.width; // resolution.x (vec2<f32>)
+		uniformData[3] = this.canvas.height; // resolution.y
+		uniformData[4] = this.noiseScale; // noiseScale (f32)
+		uniformData[5] = 0; // padding
+		uniformData[6] = 0; // padding
+		uniformData[7] = 0; // padding
+
+		this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
+
+		// Create command encoder
+		const commandEncoder = this.device.createCommandEncoder();
+
+		// Create render pass
+		const renderPass = commandEncoder.beginRenderPass({
+			colorAttachments: [
+				{
+					view: this.gpuContext.getCurrentTexture().createView(),
+					clearValue: { r: 0, g: 0, b: 0, a: 0 },
+					loadOp: "clear",
+					storeOp: "store",
+				},
+			],
+		});
+
+		// Set pipeline and bind group
+		renderPass.setPipeline(this.renderPipeline);
+		renderPass.setBindGroup(0, this.bindGroup);
+
+		// Draw
+		renderPass.draw(4);
+		renderPass.end();
+
+		// Submit commands
+		this.device.queue.submit([commandEncoder.finish()]);
+	}
+
 	renderWebGL(time) {
 		const gl = this.gl;
 
@@ -294,7 +556,9 @@ class NoiseAnimation {
 
 	renderStaticNoise() {
 		// Static noise for users who prefer reduced motion
-		if (this.isWebGLSupported) {
+		if (this.isWebGPUSupported) {
+			this.renderWebGPU(0);
+		} else if (this.isWebGLSupported) {
 			this.renderWebGL(0);
 		} else {
 			this.renderCanvas2D(0);
@@ -309,10 +573,16 @@ class NoiseAnimation {
 		const interval = 1000 / targetFPS;
 
 		if (time - this.lastTime >= interval) {
-			if (this.isWebGLSupported) {
-				this.renderWebGL(time);
-			} else {
-				this.renderCanvas2D(time);
+			switch (this.renderingMethod) {
+				case "webgpu":
+					this.renderWebGPU(time);
+					break;
+				case "webgl":
+					this.renderWebGL(time);
+					break;
+				case "canvas2d":
+					this.renderCanvas2D(time);
+					break;
 			}
 			this.lastTime = time;
 		}
@@ -332,6 +602,7 @@ class NoiseAnimation {
 		this.canvas.style.width = rect.width + "px";
 		this.canvas.style.height = rect.height + "px";
 
+		// Handle Canvas 2D context scaling
 		if (this.ctx) {
 			this.ctx.scale(dpr, dpr);
 			this.imageData = this.ctx.createImageData(
@@ -339,6 +610,9 @@ class NoiseAnimation {
 				this.canvas.height,
 			);
 		}
+
+		// WebGPU context automatically handles resize
+		// WebGL context automatically handles resize through viewport calls
 	}
 
 	setupEventListeners() {
@@ -404,6 +678,15 @@ class NoiseAnimation {
 	destroy() {
 		this.stop();
 
+		// Clean up WebGPU resources
+		if (this.isWebGPUSupported && this.device) {
+			if (this.uniformBuffer) {
+				this.uniformBuffer.destroy();
+			}
+			// Note: Other WebGPU resources are automatically cleaned up when device is destroyed
+		}
+
+		// Clean up WebGL resources
 		if (this.gl && this.program) {
 			this.gl.deleteProgram(this.program);
 		}
@@ -416,7 +699,7 @@ class NoiseAnimation {
 
 // Initialize when DOM is ready
 if (document.readyState === "loading") {
-	document.addEventListener("DOMContentLoaded", () => {
+	document.addEventListener("DOMContentLoaded", async () => {
 		window.noiseAnimation = new NoiseAnimation();
 	});
 } else {
