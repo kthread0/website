@@ -1,7 +1,8 @@
 :root {
+	padding: 0.5vw;
 	font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
-	font-size: calc(42px + (60 - 42) * (100vw - 768px) / (1440 - 768));
-	text-align: center;
+	font-size: 1vw;
+	text-align: left;
 	background-color: black;
 	color: white;
 	text-rendering: geometricPrecision;
