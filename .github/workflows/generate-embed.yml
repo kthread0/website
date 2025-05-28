@@ -1,0 +1,263 @@
+# @format
+
+name: Generate Embed Preview
+
+on:
+    push:
+        branches: ["main"]
+        paths:
+            - "index.html"
+            - "style.css"
+            - ".github/workflows/generate-embed.yml"
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    pages: write
+    id-token: write
+
+jobs:
+    generate-embed:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Install dependencies
+              run: |
+                  npm install -g playwright
+                  npx playwright install chromium
+
+            - name: Create embed generator script
+              run: |
+                  cat > generate-embed.js << 'EOF'
+                  const { chromium } = require('playwright');
+                  const fs = require('fs');
+                  const path = require('path');
+
+                  async function generateEmbedPreview() {
+                    const browser = await chromium.launch();
+                    const page = await browser.newPage();
+
+                    // Set viewport for social media embed (1200x630 for Open Graph)
+                    await page.setViewportSize({ width: 1200, height: 630 });
+
+                    // Create a custom HTML page for the embed
+                    const embedHTML = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                      <meta charset="UTF-8">
+                      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                      <style>
+                        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+                        * {
+                          margin: 0;
+                          padding: 0;
+                          box-sizing: border-box;
+                        }
+
+                        body {
+                          font-family: 'JetBrains Mono', monospace;
+                          background: linear-gradient(135deg, #000000 0%, #111111 100%);
+                          color: #00ff41;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 100vh;
+                          overflow: hidden;
+                          position: relative;
+                        }
+
+                        .noise {
+                          position: absolute;
+                          top: 0;
+                          left: 0;
+                          width: 100%;
+                          height: 100%;
+                          opacity: 0.1;
+                          background-image:
+                            radial-gradient(circle at 20% 50%, #00ff41 1px, transparent 1px),
+                            radial-gradient(circle at 40% 20%, #00ff41 1px, transparent 1px),
+                            radial-gradient(circle at 90% 80%, #00ff41 1px, transparent 1px),
+                            radial-gradient(circle at 70% 70%, #00ff41 1px, transparent 1px);
+                          background-size: 50px 50px, 80px 80px, 60px 60px, 40px 40px;
+                          animation: noise 20s linear infinite;
+                        }
+
+                        @keyframes noise {
+                          0%, 100% { transform: translate(0, 0); }
+                          25% { transform: translate(-2px, -1px); }
+                          50% { transform: translate(1px, -2px); }
+                          75% { transform: translate(-1px, 1px); }
+                        }
+
+                        .container {
+                          text-align: center;
+                          z-index: 1;
+                          max-width: 800px;
+                          padding: 40px;
+                        }
+
+                        .brand {
+                          font-size: 4rem;
+                          font-weight: 600;
+                          margin-bottom: 20px;
+                          text-shadow: 0 0 20px #00ff41;
+                          letter-spacing: -2px;
+                        }
+
+                        .title {
+                          font-size: 2.5rem;
+                          font-weight: 400;
+                          margin-bottom: 15px;
+                          opacity: 0.9;
+                        }
+
+                        .description {
+                          font-size: 1.2rem;
+                          font-weight: 300;
+                          opacity: 0.7;
+                          line-height: 1.6;
+                          max-width: 600px;
+                          margin: 0 auto;
+                        }
+
+                        .accent {
+                          color: #ffffff;
+                        }
+
+                        .terminal-cursor {
+                          display: inline-block;
+                          width: 2px;
+                          height: 1.2em;
+                          background: #00ff41;
+                          animation: blink 1s infinite;
+                          margin-left: 2px;
+                        }
+
+                        @keyframes blink {
+                          0%, 50% { opacity: 1; }
+                          51%, 100% { opacity: 0; }
+                        }
+                      </style>
+                    </head>
+                    <body>
+                      <div class="noise"></div>
+                      <div class="container">
+                        <div class="brand">kthread</div>
+                        <div class="title">developer<span class="terminal-cursor"></span></div>
+                        <div class="description">
+                          Computer science student specializing in <span class="accent">software development</span> and <span class="accent">cybersecurity</span>
+                        </div>
+                      </div>
+                    </body>
+                    </html>
+                    `;
+
+                    await page.setContent(embedHTML);
+
+                    // Wait for fonts to load
+                    await page.waitForTimeout(2000);
+
+                    // Take screenshot
+                    const screenshot = await page.screenshot({
+                      type: 'png',
+                      fullPage: false
+                    });
+
+                    // Save PNG version
+                    fs.writeFileSync('embed-preview.png', screenshot);
+
+                    // Create SVG version for better quality and smaller size
+                    const svgContent = `
+                    <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" style="stop-color:#000000"/>
+                          <stop offset="100%" style="stop-color:#111111"/>
+                        </linearGradient>
+                        <filter id="glow">
+                          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                          <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                          </feMerge>
+                        </filter>
+                      </defs>
+
+                      <rect width="100%" height="100%" fill="url(#bg)"/>
+
+                      <!-- Noise pattern -->
+                      <circle cx="240" cy="315" r="1" fill="#00ff41" opacity="0.1"/>
+                      <circle cx="480" cy="126" r="1" fill="#00ff41" opacity="0.1"/>
+                      <circle cx="1080" cy="504" r="1" fill="#00ff41" opacity="0.1"/>
+                      <circle cx="840" cy="441" r="1" fill="#00ff41" opacity="0.1"/>
+                      <circle cx="120" cy="189" r="1" fill="#00ff41" opacity="0.1"/>
+                      <circle cx="960" cy="567" r="1" fill="#00ff41" opacity="0.1"/>
+
+                      <!-- Main content -->
+                      <text x="600" y="250" text-anchor="middle" fill="#00ff41" font-family="JetBrains Mono, monospace" font-size="64" font-weight="600" filter="url(#glow)">kthread</text>
+                      <text x="600" y="320" text-anchor="middle" fill="#00ff41" font-family="JetBrains Mono, monospace" font-size="40" font-weight="400" opacity="0.9">developer</text>
+                      <text x="600" y="380" text-anchor="middle" fill="#00ff41" font-family="JetBrains Mono, monospace" font-size="19" font-weight="300" opacity="0.7">Computer science student specializing in</text>
+                      <text x="600" y="410" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="19" font-weight="300" opacity="0.7">software development and cybersecurity</text>
+
+                      <!-- Terminal cursor -->
+                      <rect x="750" y="295" width="3" height="30" fill="#00ff41">
+                        <animate attributeName="opacity" values="1;1;0;0" dur="1s" repeatCount="indefinite"/>
+                      </rect>
+                    </svg>
+                    `;
+
+                    fs.writeFileSync('embed-preview.svg', svgContent);
+
+                    await browser.close();
+                    console.log('Embed preview generated successfully!');
+                  }
+
+                  generateEmbedPreview().catch(console.error);
+                  EOF
+
+            - name: Generate embed preview
+              run: node generate-embed.js
+
+            - name: Optimize PNG with ImageMagick
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y imagemagick
+                  convert embed-preview.png -quality 85 -strip embed-preview.png
+
+            - name: Check for changes
+              id: verify-changed-files
+              run: |
+                  if git diff --quiet HEAD -- embed-preview.png embed-preview.svg; then
+                    echo "changed=false" >> $GITHUB_OUTPUT
+                  else
+                    echo "changed=true" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Commit and push if changed
+              if: steps.verify-changed-files.outputs.changed == 'true'
+              run: |
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "GitHub Action"
+                  git add embed-preview.png embed-preview.svg
+                  git commit -m "🎨 Update embed preview [skip ci]" || exit 0
+                  git push
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: embed-previews
+                  path: |
+                      embed-preview.png
+                      embed-preview.svg
+                  retention-days: 30
