@@ -30,9 +30,10 @@ jobs:
               with:
                   node-version: "20"
 
-            - name: Install dependencies
+            - name: Initialize npm and install dependencies
               run: |
-                  npm install -g playwright
+                  npm init -y
+                  npm install playwright
                   npx playwright install chromium
 
             - name: Create embed generator script
