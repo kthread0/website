@@ -1,11 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!--
-    kthread.dev favicon
-    Copyright (c) 2025 kthread
-    Licensed under the MIT License
-  -->
-  <rect width="100" height="100" fill="#0a0a0a"/>
-  <text x="50" y="65" font-family="monospace" font-size="40" font-weight="bold" fill="#00ff41" text-anchor="middle">k</text>
-  <rect x="10" y="10" width="80" height="2" fill="#00ff41" opacity="0.5"/>
-  <rect x="10" y="88" width="80" height="2" fill="#00ff41" opacity="0.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background: Dark Panel with Chamfered Top-Right Corner -->
+  <path d="M4 4 H48 L60 16 V60 H4 Z" fill="#141414" stroke="#ccff00" stroke-width="2" />
+  
+  <!-- Accent Square with Glow -->
+  <rect x="12" y="12" width="8" height="8" fill="#ccff00" filter="url(#glow)" />
+  
+  <!-- Letter K -->
+  <text x="34" y="48" font-family="monospace" font-weight="bold" font-size="36" fill="#eeeeee" style="font-family: 'Courier New', monospace;">K</text>
 </svg>
