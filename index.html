@@ -1,193 +1,184 @@
 <!doctype html>
 <!--
-  kthread.dev - Personal website and portfolio
+  kthread.dev - Tactical / Military UI
   Copyright (c) 2025 kthread
-  Licensed under the MIT License - see LICENSE file for details
 -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="kthread - developer specializing in software development and cybersecurity." />
+    <meta name="theme-color" content="#ccff00" />
 
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="kthread - developer" />
-    <meta property="og:description" content="student specializing in software development and cybersecurity." />
-    <meta property="og:url" content="https://kthread.dev" />
-    <meta property="og:site_name" content="kthread.dev" />
-    <meta property="og:locale" content="en_US" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@kthread0" />
-    <meta name="twitter:title" content="kthread - developer" />
-    <meta name="twitter:description" content="student specializing in software development and cybersecurity." />
-
-    <meta name="theme-color" content="#00ff41" />
-    <meta name="msapplication-TileColor" content="#00ff41" />
-    <meta name="author" content="kthread" />
-    <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow" />
-
-    <link rel="canonical" href="https://kthread.dev" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate icon" href="/favicon.ico" />
+    <title>KTHREAD // OPERATOR_PROFILE</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet" />
-
+    <link href="https://fonts.googleapis.com/css2?family=Recursive:wght@300..1000&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
-    <title>kthread - developer</title>
   </head>
   <body>
+    <!-- Preloader -->
+    <div id="preloader">
+      <pre id="ascii-skull"></pre>
+    </div>
+
+    <div id="tactical-cursor"><div class="cursor-ring"></div></div>
     <canvas id="noise-canvas" aria-hidden="true"></canvas>
 
-    <header class="header">
-      <nav class="nav">
-        <div class="nav-brand">kthread</div>
-        <ul class="nav-menu">
-          <li><a href="#about" class="nav-link">about</a></li>
-          <li><a href="#projects" class="nav-link">projects</a></li>
-          <li><a href="#contact" class="nav-link">contact</a></li>
-        </ul>
-      </nav>
-    </header>
-
-    <main class="main">
-
-      <section class="hero">
-        <div class="container">
-          <div class="hero-content">
-            <h1 class="hero-title">
-              Hi, I'm a developer.
-            </h1>
-            <p class="hero-description">
-              Welcome to my website/portfolio, here I will be posting blogs and projects that I have worked on, as well as some of my personal projects.
-            </p>
-            <div class="hero-actions">
-              <a href="#projects" class="btn btn-primary">view work</a>
-              <a href="#contact" class="btn btn-secondary">get in touch</a>
-            </div>
+    <div class="layout-grid">
+      <aside class="sidebar">
+        <div>
+          <div class="brand">KPTR</div>
+          <nav class="nav-links">
+            <a href="#about" class="nav-item">01 // PROFILE</a>
+            <a href="#projects" class="nav-item">02 // PROJECTS</a>
+            <a href="#contact" class="nav-item">03 // COMMS</a>
+          </nav>
+        </div>
+        
+        <div class="status-panel">
+          <div class="status-row">
+            <span>STATUS</span>
+            <span class="status-value">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <span>REGION</span>
+            <span class="status-value">EARTH</span>
+          </div>
+          <div class="status-row">
+            <span>UPTIME</span>
+            <span class="status-value">99.9%</span>
           </div>
         </div>
-      </section>
+      </aside>
 
-      <section id="about" class="section">
-        <div class="container">
-          <h2 class="section-title">about</h2>
-          <div class="about-content">
-            <div class="about-text">
-              <p>
-                I am 20 years old and currently studying computer science, specializing in software development and cybersecurity.
-              </p>
-              <p>
-                I've been studying and messing with computers since I was a kid, since then I've learned a lot about how they work, how to make them do what I want, and how to make them do it well.
-              </p>
-            </div>
-            <div class="skills">
-              <h3>skills</h3>
-              <div class="skills-list">
-                <span class="skill">C</span>
-                <span class="skill">Rust</span>
-                <span class="skill">React</span>
-				<span class="skill">JavaScript/TypeScript</span>
-                <span class="skill">Node.js</span>
-				<span class="skill">Linux</span>
-				<span class="skill">BSD</span>
-				<span class="skill">Cybersecurity</span>
-              </div>
-            </div>
+      <main class="content">
+        
+        <section id="about">
+          <div class="section-header">
+            <span class="section-marker">01</span>
+            <h2 class="section-title">PROFILE</h2>
           </div>
-        </div>
-      </section>
+          
+          <p class="bio-text">
+            20-year-old developer specializing in 
+            <span class="term-trigger" data-term="software">software development</span> 
+            and 
+            <span class="term-trigger" data-term="security">cybersecurity</span>.
+            <br>
+            <span class="status-line">
+              <span class="status-label">BUILDING:</span>
+              <span id="dynamic-carousel" class="status-dynamic">ROBUST SYSTEMS</span>
+            </span>
+          </p>
 
-      <section id="projects" class="section">
-        <div class="container">
-          <h2 class="section-title">projects</h2>
+          <div class="skills-container">
+            <div class="skill-block">C_LANG</div>
+            <div class="skill-block">RUST</div>
+            <div class="skill-block">REACT</div>
+            <div class="skill-block">TYPESCRIPT</div>
+            <div class="skill-block">NODE.JS</div>
+            <div class="skill-block">LINUX</div>
+            <div class="skill-block">BSD</div>
+            <div class="skill-block">NETSEC</div>
+          </div>
+        </section>
+
+        <section id="projects" style="margin-top: 6rem;">
+          <div class="section-header">
+            <span class="section-marker">02</span>
+            <h2 class="section-title">PROJECTS</h2>
+          </div>
+
           <div class="projects-grid">
-
             <article class="project-card">
               <div class="project-header">
+                <span>OP_ID: 001</span>
+                <span>SECURE_GEN</span>
+              </div>
+              <div class="project-body">
                 <h3 class="project-title">genpasswd</h3>
-                <div class="project-links">
-                  <a href="https://github.com/kthread0/genpasswd" class="project-link">[github]</a>
+                <p class="project-desc">Cryptographically secure password generator implemented in C using libsodium. High entropy, zero compromise.</p>
+                <div class="tech-stack">
+                  <span class="tech-tag">C</span>
+                  <span class="tech-tag">LIBSODIUM</span>
+                  <span class="tech-tag">CRYPTO</span>
                 </div>
               </div>
-              <p class="project-description">
-		Cryptographically secure password generator in C, using libsodium
-              </p>
-              <div class="project-tech">
-                <span class="tech-tag">C</span>
-                <span class="tech-tag">libsodium</span>
-                <span class="tech-tag">security</span>
-              </div>
             </article>
-            <article class="project-card">
-              <div class="project-header">
-                <h3 class="project-title">PWNed by 14:00 Roblox Game Wiki</h3>
-                <div class="project-links">
-                  <a href="https://pwnedby1400.wiki" class="project-link">[website]</a>
-                </div>
-              </div>
-              <p class="project-description">
-		Unofficial game wiki for the Roblox game "PWNed by 14:00"
-              </p>
-              <div class="project-tech">
-                <span class="tech-tag">Mediawiki</span>
-                <span class="tech-tag">Wiki</span>
-                <span class="tech-tag">Roblox</span>
-              </div>
-            </article>
-            <article class="project-card">
-              <div class="project-header">
-                <h3 class="project-title">kptrOS</h3>
-                <div class="project-links">
-                  <a href="https://github.com/kthread0/kptrOS" class="project-link">[github]</a>
-                </div>
-              </div>
-              <p class="project-description">
-		Hobbyist Operating System
-              </p>
-              <div class="project-tech">
-                <span class="tech-tag">C</span>
-                <span class="tech-tag">Operating System</span>
-                <span class="tech-tag">Hobby</span>
-              </div>
-            </article>
-      </section>
 
-      <section id="contact" class="section">
-        <div class="container">
-          <h2 class="section-title">contact</h2>
-          <div class="contact-content">
-            <p class="contact-description">
-              Feel free to reach out for collaborations or just to say hello.
-            </p>
-            <div class="contact-methods">
-              <div class="contact-method">
-                <span class="contact-label">email:</span>
-                <a href="mailto:dev@kthread.dev" class="contact-link">dev@kthread.dev</a>
+            <article class="project-card">
+              <div class="project-header">
+                <span>OP_ID: 002</span>
+                <span>WIKI_DB</span>
               </div>
-              <div class="contact-method">
-                <span class="contact-label">github:</span>
-                <a href="https://github.com/kthread0" class="contact-link">kthread0</a>
+              <div class="project-body">
+                <h3 class="project-title">PWNed Wiki</h3>
+                <p class="project-desc">Comprehensive knowledge base for "PWNed by 14:00". Community driven, highly structured data.</p>
+                <div class="tech-stack">
+                  <span class="tech-tag">MEDIAWIKI</span>
+                  <span class="tech-tag">LUA</span>
+                  <span class="tech-tag">ROBLOX</span>
+                </div>
               </div>
-              <div class="contact-method">
-                <span class="contact-label">discord: kthread0</span>
+            </article>
+
+            <article class="project-card">
+              <div class="project-header">
+                <span>OP_ID: 003</span>
+                <span>KERNEL_DEV</span>
               </div>
+              <div class="project-body">
+                <h3 class="project-title">kptrOS</h3>
+                <p class="project-desc">Experimental hobbyist operating system. Exploring memory management and process scheduling from scratch.</p>
+                <div class="tech-stack">
+                  <span class="tech-tag">C</span>
+                  <span class="tech-tag">ASSEMBLY</span>
+                  <span class="tech-tag">OSDEV</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="contact" style="margin-top: 6rem;">
+          <div class="section-header">
+            <span class="section-marker">03</span>
+            <h2 class="section-title">CONTACT</h2>
+          </div>
+
+          <div class="contact-list">
+            <a href="mailto:dev@kthread.dev" class="contact-item">
+              <span class="contact-label">Email</span>
+              <span class="contact-value">dev@kthread.dev</span>
+            </a>
+            <a href="https://github.com/kthread0" class="contact-item">
+              <span class="contact-label">GitHub</span>
+              <span class="contact-value">kthread0</span>
+            </a>
+            <div class="contact-item">
+              <span class="contact-label">Discord</span>
+              <span class="contact-value">kthread0</span>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-    </main>
+        <footer class="footer">
+          <span>SYSTEM_ID: KTHREAD_DEV_V4</span>
+          <span>END_OF_LINE</span>
+        </footer>
 
-    <footer class="footer">
-      <div class="container">
-        <p>built with care.</p>
-      </div>
-    </footer>
+      </main>
+    </div>
+
+    <!-- Tactical Popup -->
+    <div id="tactical-popup" class="hidden">
+      <div class="popup-header">INTEL_DATA</div>
+      <div class="popup-content"></div>
+    </div>
 
     <script src="noise-animation.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>
